@@ -81,7 +81,9 @@ async fn get_pods_info(
                 let pods_in_namespace = api.list(&Default::default()).await;
                 match pods_in_namespace {
                     Ok(p) => {
-                        for pod in p.items {
+                        for pod in p.items.into_iter().filter(|pod| {
+                            pod.status.as_ref().unwrap().phase.as_ref().unwrap() == "Running"
+                        }) {
                             let labels = pod.metadata.labels.unwrap_or_default().clone();
                             let maintainer =
                                 labels.get("maintainer").unwrap_or(&"".to_string()).clone();
